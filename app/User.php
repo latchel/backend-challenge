@@ -2,6 +2,7 @@
 
 namespace App;
 
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -16,7 +17,7 @@ class User extends Authenticatable
      * @var array
      */
     protected $fillable = [
-        'name', 'email', 'password',
+        'name', 'email', 'password', 'token',
     ];
 
     /**
@@ -36,4 +37,20 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+
+    public static function loginWithtoken($token)
+    {
+        $user = self::where('token', $token)->first();
+
+        if ($user) {
+            Auth::login($user);
+        }
+
+        return Auth::user();
+    }
+
+    public function urls()
+    {
+        return $this->hasMany('App\Url', 'user_id');
+    }
 }
