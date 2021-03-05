@@ -14,3 +14,6 @@ use Illuminate\Http\Request;
 */
 
 Route::post('/login', 'Auth@login');
+
+Route::get('/urls', 'Urls@index');
+Route::post('/urls', 'Urls@store');
