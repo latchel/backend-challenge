@@ -17,3 +17,5 @@ Route::post('/login', 'Auth@login');
 
 Route::get('/urls', 'Urls@index');
 Route::post('/urls', 'Urls@store');
+Route::put('/urls/{id}', 'Urls@update');
+Route::get('/urls/favorite', 'Urls@favorite');

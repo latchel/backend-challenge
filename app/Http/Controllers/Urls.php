@@ -33,6 +33,28 @@ class Urls extends Controller
     }
 
     /**
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function favorite(Request $request)
+    {
+        $user = User::loginWithToken($request->input('token'));
+
+        if (!$user) {
+            abort(403);
+        }
+
+        return DB::table('url')
+                ->join('favorite_url', 'favorite_url.url_id', '=', 'url.url_id')
+                ->join('url_data', 'url_data.url_id', '=', 'url.url_id')
+                ->select('url.*', 'url_data.*')
+                ->where('favorite_url.user_id', $user->id)
+                ->get();
+                // ->toSql();
+    }
+
+    /**
      * Show the form for creating a new resource.
      *
      * @return \Illuminate\Http\Response
@@ -114,7 +136,36 @@ class Urls extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        $user = User::loginWithToken($request->input('token'));
+
+        if (!$user) {
+            abort(403);
+        }
+
+        $validated = $request->validate([
+            'favorite' => 'boolean|required',
+        ]);
+
+        $url = Url::find($id);
+
+        if ($url) {
+            if ($url->user_id == $user->id) {
+                if (!($favorite = FavoriteUrl::where(['url_id' => $url->url_id, 'user_id' => $user->id])->first()) && $request->input('favorite') == true) {
+                    return FavoriteUrl::create(['url_id' => $url->url_id, 'user_id' => $user->id]);
+                } else if (($favorite = FavoriteUrl::where(['url_id' => $url->url_id, 'user_id' => $user->id])->first()) && $request->input('favorite') == true) {
+                    return $favorite;
+                } else if (($favorite = FavoriteUrl::where(['url_id' => $url->url_id, 'user_id' => $user->id])->first()) && $request->input('favorite') == false) {
+                    $favorite->delete();
+                    return response('', 204);
+                } else if (!($favorite = FavoriteUrl::where(['url_id' => $url->url_id, 'user_id' => $user->id])->first()) && $request->input('favorite') == false) {
+                    return response('', 204);
+                }
+            } else {
+                abort(403);
+            }
+        } else {
+            abort(404);
+        }
     }
 
     /**
