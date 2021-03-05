@@ -55,6 +55,24 @@ class Urls extends Controller
     }
 
     /**
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function search(Request $request)
+    {
+        $user = User::loginWithToken($request->input('token'));
+
+        if (!$user) {
+            abort(403);
+        }
+
+        $term = $request->input('term', '');
+
+        return $user->urls()->where('name', 'ilike', '%$term%')->get();
+    }
+
+    /**
      * Show the form for creating a new resource.
      *
      * @return \Illuminate\Http\Response
@@ -79,7 +97,7 @@ class Urls extends Controller
         }
 
         $validated = $request->validate([
-            // 'link' => 'unique:url,url',
+            'link' => 'unique:url,url',
         ]);
 
         $url = Url::create([
